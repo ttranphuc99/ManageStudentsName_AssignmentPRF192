@@ -149,14 +149,14 @@ int addNewName(int index) {
     }
 }
 
-void search(int index, char key[]) {
-    int i;
-    char* rel;
-    for (i = 0; i <= index; i++) {
-        rel = strstr(info[i].name, key);
-        if (rel != NULL) printf("\n%s", info[i].name);
+//uppercase
+void upperCase(char* str) {
+    while (*str != '\0') {
+        if (*str >= 'a' && *str <= 'z') *str -= 32;
+        str++;
     }
 }
+
 
 void printMenu() {
     system("cls");
@@ -284,6 +284,7 @@ int main(int argc, char** argv) {
             //search
             case 2: {
                 char str[256];
+                char term[256];
                 system("cls");
                 printf("\n\n\t\tEnter key words: ");
                 getName(str);
@@ -294,8 +295,12 @@ int main(int argc, char** argv) {
                 
                 //search
                 int i, flag = 0;
+                char *rel;
                 for (i = 0; i <= numOfStudent; i++) {
-                    char* rel = strstr(info[i].name, str);
+                    strcpy(term, info[i].name);
+                    upperCase(term);
+                    upperCase(str);
+                    rel = strstr(term, str);
                     
                     if (rel != NULL) {
                         if (!flag) {
@@ -319,10 +324,6 @@ int main(int argc, char** argv) {
             case 4: {
                 sortName(numOfStudent);
                 break;
-            }
-            //exit
-            case 5: {
-                
             }
         }
     } while (choice != 5);
