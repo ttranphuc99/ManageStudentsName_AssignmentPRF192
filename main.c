@@ -197,6 +197,16 @@ char getYesNo() {
     return choice;
 }
 
+//print search history list
+int printSearchHistory(FILE* f) {
+    if (feof(f)) return 1;
+    
+    char str[256];
+    
+    fscanf(f, "%[^\n]%*c", str);
+    if (printSearchHistory(f)) printf("\n\t\t%s", str);
+    return 1;
+}
 
 //view search history
 void viewSearchHistory() {
@@ -206,10 +216,7 @@ void viewSearchHistory() {
     system("cls");
     printf("\n\n\t\tSearch history:\n");
     
-    while (!feof(f)) {
-        fscanf(f, "%[^\n]%*c", str);
-        printf("\n\t\t%s", str);
-    }
+    printSearchHistory(f);
     fclose(f);
     getchar();
 }
