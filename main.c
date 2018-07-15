@@ -39,6 +39,7 @@ int importData() {
     while (!feof(f)) {
         i++;
         fscanf(f, "%[^\n]%*c", info[i].name); 
+        if (i == 0 && strlen(info[i].name) == 0) i=-1;
     }
     fclose(f);
     return i;
@@ -47,16 +48,15 @@ int importData() {
 //to export data to file
 void exportData(int index) {
     FILE* f = fopen("Name.txt", "a");
-    
-    fprintf(f, "\n%s", info[index].name);
+    if (index == 0) fprintf(f, "%s", info[index].name);
+    else fprintf(f, "\n%s", info[index].name);
     fclose(f);
 }
 
 //to export search history
 void exportHistory(char str[]) {
     FILE* f = fopen("History.txt", "a");
-    
-    fprintf(f, "\n%s", str);
+    fprintf(f, "%s\n", str);
     fclose(f);
 }
 
@@ -204,19 +204,27 @@ int printSearchHistory(FILE* f) {
     char str[256];
     
     fscanf(f, "%[^\n]%*c", str);
-    if (printSearchHistory(f)) printf("\n\t\t%s", str);
+    if (printSearchHistory(f))
+        if (*str >= 'A' && *str <= 'Z') printf("\n\t\t%s", str);
     return 1;
 }
 
 //view search history
 void viewSearchHistory() {
     FILE* f = fopen("History.txt", "r");
-    char str[256];
-    
     system("cls");
-    printf("\n\n\t\tSearch history:\n");
+    char str[256];
+    fscanf(f, "%[^\n]%*c", str);
+    fclose(f);
     
-    printSearchHistory(f);
+    if (*str != 1) {
+        printf("\n\n\t\tSearch history:\n");
+        f = fopen("History.txt", "r");
+        printSearchHistory(f);
+    } else {
+        printf("\n\n\t\tNo search history!\n");
+    }
+    
     fclose(f);
     getchar();
 }
@@ -263,62 +271,67 @@ int main(int argc, char** argv) {
         switch (choice) {
             //input student name
             case 1: {
-                //check quanlity
-                if (numOfStudent >= 50) printf("Full disk! You cannot add more data.\n");
-                else {
-                    char str[256];
-                    
-                    system("cls");
-                    printf("\n\n");
-                    printf("\t\tInput: ");
-                    getName(str);
-                    formatName(str);
-                    
-                    printf("\n\t\tDo you want to add %s? [y/n]\t", str);
-                    char ans = getYesNo();
-                    
-                    if (ans == 'Y' || ans == 'y') {
+                char yesNoLoop = 'y';
+                system("cls");
+                do {
+                    //check quanlity
+                    if (numOfStudent >= 50) printf("Full disk! You cannot add more data.\n");
+                    else {
+                        char str[256];
+
+                        printf("\n\n");
+                        printf("\t\tInput: ");
+                        getName(str);
+                        formatName(str);
+                        
                         numOfStudent++;
                         strcpy(info[numOfStudent].name, str);
                         exportData(numOfStudent);
-                        printf("\t\tSuccess!");
-                        fflush(stdin);
-                        getchar();
-                    } 
-                }
+
+                        printf("\n\t\tDo you want continue? [y/n]\t");
+                        yesNoLoop = getYesNo();
+                    }
+                } while(yesNoLoop == 'y' || yesNoLoop == 'Y');
                 break;
             }
             //search
             case 2: {
-                char str[256];
-                char term[256];
                 system("cls");
-                printf("\n\n\t\tEnter key words: ");
-                getName(str);
-                formatName(str);
-                
-                //export to file
-                exportHistory(str);
-                
-                //search
-                int i, flag = 0;
-                char *rel;
-                for (i = 0; i <= numOfStudent; i++) {
-                    strcpy(term, info[i].name);
-                    upperCase(term);
-                    upperCase(str);
-                    rel = strstr(term, str);
-                    
-                    if (rel != NULL) {
-                        if (!flag) {
-                            printf("\n\n\t\tResult:\n");
-                            flag = 1;
+                char yesNoLoop = 'y';
+                do {                    
+                    char str[256];
+                    char term[256];
+                    printf("\n\n\t\tEnter key words: ");
+                    getName(str);
+                    formatName(str);
+
+                    //export to file
+                    exportHistory(str);
+
+                    //search
+                    int i, flag = 0;
+                    char *rel;
+                    for (i = 0; i <= numOfStudent; i++) {
+                        strcpy(term, info[i].name);
+                        upperCase(term);
+                        upperCase(str);
+                        rel = strstr(term, str);
+
+                        if (rel != NULL) {
+                            if (!flag) {
+                                printf("\n\n\t\tResult:\n");
+                                flag = 1;
+                            }
+                            printf("\t\t%s, ", info[i].name);
                         }
-                        printf("\t\t%s\n", info[i].name);
                     }
-                }
-                
-                if (!flag) printf("\n\t\tNo result found!\n");
+
+                    if (!flag) printf("\n\t\tNo result found!\n");
+                    else printf("\b \b\b \b");
+                    
+                    printf("\n\t\tDo you want continue? [y/n]\t");
+                    yesNoLoop = getYesNo();
+                } while (yesNoLoop == 'y' || yesNoLoop == 'Y');
                 getchar();
                 break;
             }
@@ -330,6 +343,11 @@ int main(int argc, char** argv) {
             //list all
             case 4: {
                 sortName(numOfStudent);
+                break;
+            }
+            //exit
+            default: {
+                printf("\t\t---Bye Bye--------");
                 break;
             }
         }
